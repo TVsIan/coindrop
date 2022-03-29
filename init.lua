@@ -27,7 +27,7 @@ function coindrop.startplugin()
                 if active then
                     if not field[2] then
                     	coinCount = coinCount + 1
-                        print("CoinDrop:", string.format('%s pressed', field[1].name), "Total coins: ", coinCount)
+                        emu.print_verbose(string.format('CoinDrop: %s pressed, %d total coins inserted', field[1].name, coinCount))
                         playCoinSound()
                     end
                 end
@@ -56,21 +56,22 @@ function coindrop.startplugin()
 
 		-- Play a short silent sound to initialize the sound system,
 		-- otherwise, there will be a lag when the first coin is inserted.
+		emu.print_verbose('CoinDrop: Initialize sound playback')
 		playSound("silent")
 
 		-- Scan inputs, save ports named COIN[number]
-		print("CoinDrop", "Checking inputs...")
+		emu.print_verbose('CoinDrop: Checking inputs')
 		portman = manager.machine.ioport
 		for t, p in pairs(portman.ports) do
     		local fields = {}
     		for n, f in pairs(p.fields) do
         		if portman:input_type_to_token(f.type, f.player):match('^COIN[0-9]+$') then
-        			print("CoinDrop:", "Found coin input port:", portman:input_type_to_token(f.type, f.player))
+        			emu.print_verbose(string.format('CoinDrop: Found coin input %s', portman:input_type_to_token(f.type, f.player)))
             		table.insert(fields, { f, false })
         		end
         	end 
         	if #fields > 0 then
-    			print("CoinDrop:", "Saving coin input ports, count:", #fields)
+    			emu.print_verbose(string.format('CoinDrop: Saving coin input ports, total count: %d', #fields))
         		table.insert(coinPorts, { p, fields })
     		end	
     	end
@@ -82,13 +83,10 @@ function coindrop.startplugin()
 		soundChoice = math.random(1,3)
 		if soundChoice == 1 then
 			soundFile = "coin1"
-			print("CoinDrop:", "Sound 1")
 		elseif soundChoice == 2 then
 			soundFile = "coin2"
-			print("CoinDrop:", "Sound 2")
 		else
 			soundFile = "coin3"
-			print("CoinDrop:", "Sound 3")
 		end
 		playSound(soundFile)
 	end
@@ -97,8 +95,10 @@ function coindrop.startplugin()
 		-- Playback using aplay on Linux or Sounder on Windows
 		local volume = 100
 		if useaplay then
+			emu.print_verbose(string.format("CoinDrop: Playing sound %s.wav using aplay", soundFile))
 			io.popen("aplay -q plugins/coindrop/sounds/"..soundFile..".wav &")
 		else
+			emu.print_verbose(string.format("CoinDrop: Playing sound %s.wav using sounder", soundFile))
 			io.popen("start plugins/coindrop/bin/sounder.exe /volume "..tostring(volume).." /id "..soundFile.." /stopbyid "..soundFile.." plugins/coindrop/sounds/"..soundFile..".wav")
 		end
 	end
