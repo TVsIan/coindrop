@@ -1,6 +1,6 @@
 Coin Drop Sounds:
 
-Provides a coin drop sound effect when a coin is inserted in MAME.
+Provides a coin drop sound effect when a coin is inserted in MAME. Gives a little extra info if -verbose is on.
 
 Currently selects one of three random sounds. Eventually, it will have some variations to use based on coin count, to sound like a fuller coin box.
 
