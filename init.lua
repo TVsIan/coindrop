@@ -17,6 +17,11 @@ function coindrop.startplugin()
 	local coinCount = nil
 	local portman = nil
 	local useaplay = nil
+	local pluginFolder = nil
+
+	local function get_plugin_path()
+		return emu.subst_env(manager.machine.options.entries.pluginspath:value():match('([^;]+)')) .. '/coindrop'
+	end
 
 	local function process_frame()
 		-- Check input for coin port activity
@@ -35,13 +40,14 @@ function coindrop.startplugin()
             end
         end
     end
-	
+
 	local function cleanup()
 		portman = nil
 		coinCount = nil
 		useaplay = nil
+		pluginFolder = nil
 		coinPorts = {}
-		emu.register_frame(nil)		
+		emu.register_frame(nil)
 	end
 
 	function is_linux()
@@ -53,6 +59,7 @@ function coindrop.startplugin()
 		math.random(); math.random(); math.random()
 		coinCount = 0
 		useaplay = is_linux()
+		pluginFolder = get_plugin_path()
 
 		-- Play a short silent sound to initialize the sound system,
 		-- otherwise, there will be a lag when the first coin is inserted.
@@ -69,11 +76,11 @@ function coindrop.startplugin()
         			emu.print_verbose(string.format('CoinDrop: Found coin input %s', portman:input_type_to_token(f.type, f.player)))
             		table.insert(fields, { f, false })
         		end
-        	end 
+        	end
         	if #fields > 0 then
     			emu.print_verbose(string.format('CoinDrop: Saving coin input ports, total count: %d', #fields))
         		table.insert(coinPorts, { p, fields })
-    		end	
+    		end
     	end
 	end
 
@@ -96,10 +103,10 @@ function coindrop.startplugin()
 		local volume = 100
 		if useaplay then
 			emu.print_verbose(string.format("CoinDrop: Playing sound %s.wav using aplay", soundFile))
-			io.popen("aplay -q plugins/coindrop/sounds/"..soundFile..".wav &")
+			io.popen("aplay -q "..pluginFolder.."/sounds/"..soundFile..".wav &")
 		else
 			emu.print_verbose(string.format("CoinDrop: Playing sound %s.wav using sounder", soundFile))
-			io.popen("start plugins/coindrop/bin/sounder.exe /volume "..tostring(volume).." /id "..soundFile.." /stopbyid "..soundFile.." plugins/coindrop/sounds/"..soundFile..".wav")
+			io.popen("start "..pluginFolder.."/bin/sounder.exe /volume "..tostring(volume).." /id "..pluginFolder.."/sounds/"..soundFile..".wav /stopbyid "..soundFile.." plugins/coindrop/sounds/"..soundFile..".wav")
 		end
 	end
 
